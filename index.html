@@ -5,64 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VNY | DSSV PHÒNG THI</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f7fafc; margin: 0; padding: 0; }
-        .header { background-color: #bd1c1c; color: white; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; }
-        .header h1 { margin: 0; font-size: 20px; }
-        .container { max-width: 1200px; margin: 25px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        /* Giao diện basic, sử dụng font chữ chuẩn không màu mè */
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #ffffff; 
+            color: #000000;
+        }
+        
+        .header { 
+            border-bottom: 1px solid #000000; 
+            padding-bottom: 10px; 
+            margin-bottom: 20px; 
+        }
+        .header h1 { 
+            margin: 0; 
+            font-size: 22px; 
+        }
+        
+        /* Bảng basic viền đen truyền thống */
+        table { 
+            width: 100%; 
+            border: 1px solid #000000; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+        }
+        th, td { 
+            padding: 8px; 
+            border: 1px solid #000000; 
+            text-align: left; 
+            font-size: 14px;
+        }
+        th { 
+            background-color: #f2f2f2; 
+        }
+        
+        /* Nút bấm basic đơn giản */
+        button { 
+            padding: 4px 10px; 
+            cursor: pointer; 
+        }
+        .btn-back { 
+            margin-top: 10px; 
+        }
+
         .page { display: none; }
         .active-page { display: block; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        th { background-color: #edf2f7; color: #4a5568; font-weight: 600; }
-        button { background-color: #bd1c1c; color: white; border: none; padding: 8px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #961515; }
-        .btn-back { background-color: #4a5568; }
-        .btn-back:hover { background-color: #2d3748; }
-        .loading { text-align: center; padding: 30px; font-style: italic; color: #666; }
-        .error-box { background: #fff5f5; border: 1px solid #fed7d7; color: #c53030; padding: 15px; border-radius: 4px; }
+        
+        .loading { 
+            padding: 20px; 
+            font-style: italic; 
+        }
+        .error-box { 
+            color: red; 
+            font-weight: bold; 
+            margin: 15px 0; 
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1 id="pageTitle">VNY | DSSV PHÒNG THI</h1>
-        <button id="backBtn" class="btn-back" style="display: none;" onclick="showMainPage()">Quay lại</button>
+        <button id="backBtn" class="btn-back" style="display: none;" onclick="showMainPage()">Quay lại danh sách</button>
     </div>
 
-    <div class="container">
-        <div id="mainPage" class="page active-page">
-            <table id="subjectsTable">
-                <thead>
-                    <tr>
-                        <th style="width: 10%">STT</th>
-                        <th style="width: 50%">Tên Môn Học</th>
-                        <th style="width: 25%">Mã Ca Thi</th>
-                        <th style="width: 15%; text-align: center;">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody id="subjectsBody"></tbody>
-            </table>
-        </div>
+    <div id="mainPage" class="page active-page">
+        <table id="subjectsTable">
+            <thead>
+                <tr>
+                    <th style="width: 10%">STT</th>
+                    <th style="width: 55%">Tên Môn Học</th>
+                    <th style="width: 20%">Mã Ca Thi</th>
+                    <th style="width: 15%; text-align: center;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="subjectsBody"></tbody>
+        </table>
+    </div>
 
-        <div id="detailPage" class="page">
-            <div id="statusArea"></div>
-            <table id="studentsTable" style="display: none;">
-                <thead>
-                    <tr>
-                        <th>STT</th>
-                        <th>Số thẻ SV</th>
-                        <th>Họ và Tên</th>
-                        <th>Ngày Sinh</th>
-                        <th>Lớp Sinh Hoạt</th>
-                    </tr>
-                </thead>
-                <tbody id="studentsBody"></tbody>
-            </table>
-        </div>
+    <div id="detailPage" class="page">
+        <div id="statusArea"></div>
+        <table id="studentsTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Số thẻ SV</th>
+                    <th>Họ và Tên</th>
+                    <th>Ngày Sinh</th>
+                    <th>Lớp Sinh Hoạt</th>
+                </tr>
+            </thead>
+            <tbody id="studentsBody"></tbody>
+        </table>
     </div>
 
 <script>
-    // Dữ liệu database môn học của bạn
     const rawData = `
 1|Anh văn A2.2|413031125202C101
 2|Anh văn A2.2|413031125202C102
@@ -1602,11 +1640,10 @@
 1536|Cơ học đất|109249025202C311
 1537|Địa chất công trình|109246025202C301
 1538|Địa chất công trình|109246025202C304
-    `; // Paste chuỗi đầy đủ 1538 dòng của bạn vào đây, chạy thoải mái không lo đứng web
+    `; // Bạn có thể dán lại chuỗi đầy đủ 1538 dòng của bạn vào đây
 
     const examData = [];
 
-    // Khởi tạo và nạp danh sách môn học
     function init() {
         rawData.trim().split('\n').forEach(line => {
             const parts = line.split('|');
@@ -1620,19 +1657,18 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${item.stt}</td>
-                <td><strong>${item.name}</strong></td>
-                <td><code>${item.ca}</code></td>
+                <td>${item.name}</td>
+                <td>${item.ca}</td>
                 <td style="text-align: center;"><button onclick="loadStudents('${item.ca}', '${item.name}')">XEM DS THI</button></td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    // Hàm gọi đến Backend cục bộ để lấy dữ liệu cực nhanh
     function loadStudents(caId, subjectName) {
         document.getElementById('mainPage').classList.remove('active-page');
         document.getElementById('detailPage').classList.add('active-page');
-        document.getElementById('backBtn').style.display = 'block';
+        document.getElementById('backBtn').style.display = 'inline-block';
         document.getElementById('pageTitle').innerText = `${subjectName} - Ca: ${caId}`;
 
         const statusArea = document.getElementById('statusArea');
@@ -1641,21 +1677,20 @@
 
         studentsTable.style.display = 'none';
         studentsBody.innerHTML = '';
-        statusArea.innerHTML = '<div class="loading">ĐANG LOAD...</div>';
+        statusArea.innerHTML = '<div class="loading">Đang tải dữ liệu...</div>';
 
-        // Gọi trực tiếp đến API Node.js đang chạy ở cổng 3000 trên máy bạn
         fetch(`https://dut-backend-api.onrender.com/api/extract?ca=${caId}`)
             .then(res => res.json())
             .then(resData => {
                 if (resData.success && resData.data.length > 0) {
-                    statusArea.innerHTML = `<div style="color: green; font-weight: bold; margin-bottom: 10px;">Tổng số sinh viên dự thi: ${resData.total}</div>`;
+                    statusArea.innerHTML = `<div style="margin-bottom: 10px;">Hiển thị danh sách: ${resData.total} sinh viên.</div>`;
                     
                     resData.data.forEach(sv => {
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td>${sv.stt}</td>
                             <td>${sv.masv}</td>
-                            <td><strong>${sv.hoten}</strong></td>
+                            <td>${sv.hoten}</td>
                             <td>${sv.ngaysinh}</td>
                             <td>${sv.lopsh}</td>
                         `;
@@ -1663,11 +1698,11 @@
                     });
                     studentsTable.style.display = 'table';
                 } else {
-                    statusArea.innerHTML = '<div class="error-box">Ca thi này hiện tại trống hoặc chưa có danh sách sinh viên từ DUT.</div>';
+                    statusArea.innerHTML = '<div class="error-box">Không có dữ liệu sinh viên cho ca thi này.</div>';
                 }
             })
             .catch(err => {
-                statusArea.innerHTML = '<div class="error-box">ERROR</div>';
+                statusArea.innerHTML = '<div class="error-box">Lỗi kết nối đến server.</div>';
             });
     }
 
@@ -1675,7 +1710,7 @@
         document.getElementById('detailPage').classList.remove('active-page');
         document.getElementById('mainPage').classList.add('active-page');
         document.getElementById('backBtn').style.display = 'none';
-        document.getElementById('pageTitle').innerText = 'VNY | DSSV PHÒNG THIi';
+        document.getElementById('pageTitle').innerText = 'VNY | DSSV PHÒNG THI';
     }
 
     init();
