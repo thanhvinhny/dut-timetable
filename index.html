@@ -5,62 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VNY | DSSV PHÒNG THI</title>
     <style>
-        /* Giao diện basic, sử dụng font chữ chuẩn không màu mè */
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px; 
-            background-color: #ffffff; 
-            color: #000000;
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #ffffff; color: #000000; }
+        .header { border-bottom: 1px solid #000000; padding-bottom: 10px; margin-bottom: 10px; }
+        .header h1 { margin: 0; font-size: 22px; }
         
-        .header { 
-            border-bottom: 1px solid #000000; 
-            padding-bottom: 10px; 
-            margin-bottom: 20px; 
-        }
-        .header h1 { 
-            margin: 0; 
-            font-size: 22px; 
-        }
+        table { width: 100%; border: 1px solid #000000; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 8px; border: 1px solid #000000; text-align: left; font-size: 14px; }
+        th { background-color: #f2f2f2; }
         
-        /* Bảng basic viền đen truyền thống */
-        table { 
-            width: 100%; 
-            border: 1px solid #000000; 
-            border-collapse: collapse; 
-            margin-top: 15px; 
-        }
-        th, td { 
-            padding: 8px; 
-            border: 1px solid #000000; 
-            text-align: left; 
-            font-size: 14px;
-        }
-        th { 
-            background-color: #f2f2f2; 
-        }
+        button { padding: 4px 10px; cursor: pointer; }
+        .btn-back { margin-top: 10px; }
         
-        /* Nút bấm basic đơn giản */
-        button { 
-            padding: 4px 10px; 
-            cursor: pointer; 
-        }
-        .btn-back { 
-            margin-top: 10px; 
-        }
-
+        #searchInput { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #000; }
         .page { display: none; }
         .active-page { display: block; }
         
-        .loading { 
-            padding: 20px; 
-            font-style: italic; 
-        }
-        .error-box { 
-            color: red; 
-            font-weight: bold; 
-            margin: 15px 0; 
-        }
+        .loading { padding: 20px; font-style: italic; }
+        .error-box { color: red; font-weight: bold; margin: 15px 0; }
+        .room-loading { color: #666; font-style: italic; font-size: 12px; }
+        .room-tag { color: #bd1c1c; font-weight: bold; }
+        .pagination { margin-top: 15px; text-align: right; }
     </style>
 </head>
 <body>
@@ -71,17 +35,25 @@
     </div>
 
     <div id="mainPage" class="page active-page">
+        <input type="text" id="searchInput" onkeyup="searchSubjects()" placeholder="Tìm kiếm theo tên môn học...">
+        
         <table id="subjectsTable">
             <thead>
                 <tr>
-                    <th style="width: 10%">STT</th>
-                    <th style="width: 55%">Tên Môn Học</th>
-                    <th style="width: 20%">Mã Ca Thi</th>
+                    <th style="width: 8%">STT</th>
+                    <th style="width: 47%">Tên Môn Học</th>
+                    <th style="width: 15%">Phòng Thi</th>
+                    <th style="width: 15%">Mã Ca Thi</th>
                     <th style="width: 15%; text-align: center;">Hành động</th>
                 </tr>
             </thead>
             <tbody id="subjectsBody"></tbody>
         </table>
+        <div class="pagination">
+            <span id="pageInfo"></span>
+            <button onclick="prevPage()">Trang trước</button>
+            <button onclick="nextPage()">Trang sau</button>
+        </div>
     </div>
 
     <div id="detailPage" class="page">
@@ -101,8 +73,8 @@
     </div>
 
 <script>
-    const rawData = `
-1|Anh văn A2.2|413031125202C101
+    // Database môn học của bạn
+    const rawData = `1|Anh văn A2.2|413031125202C101
 2|Anh văn A2.2|413031125202C102
 3|Anh văn A2.2|413031125202C103
 4|Anh văn A2.2|413031125202C104
@@ -1639,37 +1611,66 @@
 1535|Cơ học đất|109249025202C307
 1536|Cơ học đất|109249025202C311
 1537|Địa chất công trình|109246025202C301
-1538|Địa chất công trình|109246025202C304
-    `; // Bạn có thể dán lại chuỗi đầy đủ 1538 dòng của bạn vào đây
+1538|Địa chất công trình|109246025202C304`; 
 
-    const examData = [];
+    let examData = [];
+    let filteredData = [];
+    let currentPage = 1;
+    const rowsPerPage = 20;
 
     function init() {
         rawData.trim().split('\n').forEach(line => {
             const parts = line.split('|');
             if (parts.length === 3) {
-                examData.push({ stt: parts[0].trim(), name: parts[1].trim(), ca: parts[2].trim() });
+                examData.push({ stt: parts[0].trim(), name: parts[1].trim(), ca: parts[2].trim(), phong: null });
             }
         });
+        filteredData = [...examData];
+        renderTable();
+    }
 
+    function renderTable() {
         const tbody = document.getElementById('subjectsBody');
-        examData.forEach(item => {
+        tbody.innerHTML = '';
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const paginatedItems = filteredData.slice(start, end);
+
+        paginatedItems.forEach(item => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${item.stt}</td>
-                <td>${item.name}</td>
-                <td>${item.ca}</td>
-                <td style="text-align: center;"><button onclick="loadStudents('${item.ca}', '${item.name}')">XEM DS THI</button></td>
-            `;
+            const roomDisplay = item.phong ? `<span class="room-tag">${item.phong}</span>` : `<span class="room-loading" id="room-${item.ca}">Quét...</span>`;
+            tr.innerHTML = `<td>${item.stt}</td><td>${item.name}</td><td>${roomDisplay}</td><td>${item.ca}</td><td style="text-align:center;"><button onclick="loadStudents('${item.ca}', '${item.name}')">XEM</button></td>`;
             tbody.appendChild(tr);
+            if (!item.phong) autoCheckRoom(item.ca);
         });
+        document.getElementById('pageInfo').innerText = `Trang ${currentPage} / ${Math.ceil(filteredData.length / rowsPerPage)}`;
+    }
+
+    function searchSubjects() {
+        const filter = document.getElementById('searchInput').value.toUpperCase();
+        filteredData = examData.filter(item => item.name.toUpperCase().includes(filter));
+        currentPage = 1;
+        renderTable();
+    }
+
+    function autoCheckRoom(caId) {
+        fetch(`https://dut-backend-api.onrender.com/api/extract?ca=${caId}`)
+            .then(res => res.json())
+            .then(resData => {
+                if (resData.success) {
+                    const matchItem = examData.find(i => i.ca === caId);
+                    if (matchItem) matchItem.phong = resData.phong;
+                    const el = document.getElementById(`room-${caId}`);
+                    if (el) el.outerHTML = `<span class="room-tag">${resData.phong}</span>`;
+                }
+            }).catch(() => {});
     }
 
     function loadStudents(caId, subjectName) {
         document.getElementById('mainPage').classList.remove('active-page');
         document.getElementById('detailPage').classList.add('active-page');
         document.getElementById('backBtn').style.display = 'inline-block';
-        document.getElementById('pageTitle').innerText = `${subjectName} - Ca: ${caId}`;
+        document.getElementById('pageTitle').innerText = subjectName;
 
         const statusArea = document.getElementById('statusArea');
         const studentsTable = document.getElementById('studentsTable');
@@ -1677,32 +1678,20 @@
 
         studentsTable.style.display = 'none';
         studentsBody.innerHTML = '';
-        statusArea.innerHTML = '<div class="loading">Đang tải dữ liệu...</div>';
+        statusArea.innerHTML = 'Đang tải danh sách...';
 
         fetch(`https://dut-backend-api.onrender.com/api/extract?ca=${caId}`)
             .then(res => res.json())
             .then(resData => {
-                if (resData.success && resData.data.length > 0) {
-                    statusArea.innerHTML = `<div style="margin-bottom: 10px;">Hiển thị danh sách: ${resData.total} sinh viên.</div>`;
-                    
+                if (resData.success) {
+                    statusArea.innerHTML = `<div>Số SV: ${resData.total} | Phòng: <strong>${resData.phong}</strong></div>`;
                     resData.data.forEach(sv => {
                         const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${sv.stt}</td>
-                            <td>${sv.masv}</td>
-                            <td>${sv.hoten}</td>
-                            <td>${sv.ngaysinh}</td>
-                            <td>${sv.lopsh}</td>
-                        `;
+                        tr.innerHTML = `<td>${sv.stt}</td><td>${sv.masv}</td><td>${sv.hoten}</td><td>${sv.ngaysinh}</td><td>${sv.lopsh}</td>`;
                         studentsBody.appendChild(tr);
                     });
                     studentsTable.style.display = 'table';
-                } else {
-                    statusArea.innerHTML = '<div class="error-box">Không có dữ liệu sinh viên cho ca thi này.</div>';
                 }
-            })
-            .catch(err => {
-                statusArea.innerHTML = '<div class="error-box">Lỗi kết nối đến server.</div>';
             });
     }
 
@@ -1712,6 +1701,9 @@
         document.getElementById('backBtn').style.display = 'none';
         document.getElementById('pageTitle').innerText = 'VNY | DSSV PHÒNG THI';
     }
+
+    function prevPage() { if (currentPage > 1) { currentPage--; renderTable(); } }
+    function nextPage() { if (currentPage * rowsPerPage < filteredData.length) { currentPage++; renderTable(); } }
 
     init();
 </script>
