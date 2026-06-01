@@ -1641,7 +1641,7 @@
 
         studentsTable.style.display = 'none';
         studentsBody.innerHTML = '';
-        statusArea.innerHTML = '<div class="loading">Đang tải dữ liệu trực tiếp từ Server Backend nội bộ...</div>';
+        statusArea.innerHTML = '<div class="loading">ĐANG LOAD...</div>';
 
         // Gọi trực tiếp đến API Node.js đang chạy ở cổng 3000 trên máy bạn
         fetch(`https://dut-backend-api.onrender.com/api/extract?ca=${caId}`)
