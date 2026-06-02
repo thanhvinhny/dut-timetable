@@ -1630,7 +1630,7 @@
 
         paginatedItems.forEach(item => {
             const tr = document.createElement('tr');
-            const roomDisplay = item.phong ? `<span class="room-tag">${item.phong}</span>` : `<span id="room-${item.ca}">Quét...</span>`;
+            const roomDisplay = item.phong ? `<span class="room-tag">${item.phong}</span>` : `<span id="room-${item.ca}">đang load...</span>`;
             tr.innerHTML = `<td>${item.stt}</td><td>${item.name}</td><td>${roomDisplay}</td><td style="text-align:center;"><button onclick="loadStudents('${item.ca}', '${item.name}')">XEM</button></td>`;
             tbody.appendChild(tr);
             if (!item.phong) autoCheckRoom(item.ca);
