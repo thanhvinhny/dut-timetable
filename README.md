@@ -1,1 +1,1 @@
-TEST IT ON: https://thanhvinhny.github.io/dut-timetable/
+TRY IT ON: https://thanhvinhny.github.io/dut-timetable/
