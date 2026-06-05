@@ -6,7 +6,36 @@
     <title>VNY | DSSV PHÒNG THI</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #ffffff; color: #000000; }
-        .header { border-bottom: 1px solid #000000; padding-bottom: 10px; margin-bottom: 10px; }
+        
+        /* CSS cho nút Home quay về góc trái trên cùng */
+        .btn-home-back {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            background-color: #ffffff;
+            border: 1px solid #000000;
+            cursor: pointer;
+            text-decoration: none;
+            color: #000000;
+            transition: all 0.2s ease;
+        }
+        .btn-home-back:hover {
+            background-color: #f2f2f2;
+        }
+
+        /* Điều chỉnh header dịch sang phải một chút để tránh đè lên nút */
+        .header { 
+            border-bottom: 1px solid #000000; 
+            padding-bottom: 10px; 
+            margin-bottom: 10px; 
+            padding-left: 50px; /* Tạo khoảng trống cho nút quay về */
+            min-height: 35px;
+        }
         .header h1 { margin: 0; font-size: 22px; }
         table { width: 100%; border: 1px solid #000000; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 8px; border: 1px solid #000000; text-align: left; font-size: 14px; }
@@ -90,6 +119,13 @@
         </div>
     </div>
 
+    <a href="https://thanhvinhny.github.io/dut-superapp/" class="btn-home-back" title="Quay lại Dut SuperApp">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+    </a>
+
     <div class="header">
         <h1 id="pageTitle">VNY | DSSV PHÒNG THI</h1>
         <button id="backBtn" class="btn-back" style="display: none;" onclick="showMainPage()">Quay lại danh sách</button>
@@ -132,7 +168,6 @@
     </div>
 
 <script>
-    // Giữ nguyên toàn bộ chuỗi rawData của bạn ở đây để đảm bảo chạy mượt mà
     const rawData = `
 1|Anh văn A2.2|413031125202C101
 2|Anh văn A2.2|413031125202C102
@@ -1673,6 +1708,7 @@
 1537|Địa chất công trình|109246025202C301
 1538|Địa chất công trình|109246025202C304`;
 
+
     let examData = [];
     let filteredData = [];
     let currentPage = 1;
@@ -1689,7 +1725,6 @@
         renderTable();
     }
 
-    // Hàm JavaScript để xử lý đóng Hộp thoại thông báo
     function closeModal() {
         document.getElementById('noticeModal').style.display = 'none';
     }
