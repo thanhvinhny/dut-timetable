@@ -39,7 +39,7 @@
         button { padding: 4px 10px; cursor: pointer; background-color: #ffffff; border: 1px solid #000; font-weight: bold; }
         button:hover { background-color: #f2f2f2; }
         .btn-back { margin-top: 10px; }
-        #searchInput { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #000; }
+        #searchInput { width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #000; font-size: 14px; }
         .page { display: none; }
         .active-page { display: block; }
         .room-tag { color: #bd1c1c; font-weight: bold; }
@@ -63,7 +63,7 @@
     </div>
 
     <div id="mainPage" class="page active-page">
-        <input type="text" id="searchInput" onkeyup="searchSubjects()" placeholder="Tìm kiếm theo tên môn học...">
+        <input type="text" id="searchInput" onkeyup="searchSubjects()" placeholder="Nhập tên môn học HOẶC Mã số sinh viên (MSSV) để tìm lịch thi...">
         <table id="subjectsTable">
             <thead>
                 <tr>
@@ -101,8 +101,8 @@
 <script src="database.js"></script>
 
 <script>
-    let subjectsList = [];   // Danh sách các phòng thi độc nhất (để hiển thị ở trang chính)
-    let filteredData = [];   // Danh sách sau khi tìm kiếm
+    let subjectsList = [];   // Danh sách các phòng thi độc nhất
+    let filteredData = [];   // Danh sách sau khi lọc tìm kiếm
     let studentsMap = {};    // Lưu danh sách SV theo mã ca thi: { 'mã_ca': [sv1, sv2,...] }
     
     let currentPage = 1;
@@ -116,7 +116,6 @@
 
         const uniqueSubjects = {};
 
-        // Xử lý chuỗi thô từ database.js
         examDatabaseRaw.trim().split('\n').forEach(line => {
             if (!line.trim()) return;
             const parts = line.split('|');
@@ -136,7 +135,6 @@
                     lopsh: parts[10].trim()
                 };
 
-                // 1. Phân nhóm môn học/phòng thi để hiển thị ở trang chính
                 if (!uniqueSubjects[maCaId]) {
                     uniqueSubjects[maCaId] = {
                         maCa: maCaId,
@@ -148,7 +146,6 @@
                     };
                 }
 
-                // 2. Gom danh sách sinh viên tương ứng với mã ca thi đó
                 if (!studentsMap[maCaId]) {
                     studentsMap[maCaId] = [];
                 }
@@ -156,7 +153,6 @@
             }
         });
 
-        // Chuyển đối tượng định danh phòng thi thành mảng phẳng và đánh lại STT
         subjectsList = Object.values(uniqueSubjects).map((item, index) => {
             return { stt: index + 1, ...item };
         });
@@ -190,8 +186,29 @@
     }
 
     function searchSubjects() {
-        const filter = document.getElementById('searchInput').value.toUpperCase();
-        filteredData = subjectsList.filter(item => item.name.toUpperCase().includes(filter));
+        const filter = document.getElementById('searchInput').value.toUpperCase().trim();
+        
+        if (!filter) {
+            filteredData = [...subjectsList];
+        } else {
+            filteredData = subjectsList.filter(item => {
+                // Kiểm tra xem tên môn học có khớp từ khóa không
+                const matchSubjectName = item.name.toUpperCase().includes(filter);
+                
+                // Kiểm tra xem trong phòng thi này có sinh viên nào khớp MSSV đang gõ không
+                const studentsInRoom = studentsMap[item.maCa] || [];
+                const matchStudentId = studentsInRoom.some(sv => sv.masv.toUpperCase().includes(filter));
+                
+                // Thỏa mãn 1 trong 2 điều kiện là giữ lại hàng đó
+                return matchSubjectName || matchStudentId;
+            });
+        }
+        
+        // Đánh lại số thứ tự (STT) tạm thời dựa trên danh sách đã lọc để hiển thị bảng đẹp hơn
+        filteredData = filteredData.map((item, index) => {
+            return { ...item, stt: index + 1 };
+        });
+
         currentPage = 1;
         renderTable();
     }
@@ -216,7 +233,6 @@
             <div>Mã ca thi: <code style="background:#f4f4f4; padding:2px 6px;">${maCaId}</code> | Tổng số sinh viên: <strong>${listSV.length}</strong></div>
         `;
 
-        // Sắp xếp thứ tự hiển thị sinh viên theo STT trong phòng
         listSV.sort((a, b) => parseInt(a.stt) - parseInt(b.stt));
 
         listSV.forEach(sv => {
