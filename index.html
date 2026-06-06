@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VNY | DSSV PHÒNG THI</title>
+    <title>VNY | DUT - DS PHÒNG THI</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #ffffff; color: #000000; }
         
@@ -63,13 +63,13 @@
     </div>
 
     <div id="mainPage" class="page active-page">
-        <input type="text" id="searchInput" onkeyup="searchSubjects()" placeholder="Tìm kiếm bằng MSSV* hoặc tên học phần...">
+        <input type="text" id="searchInput" onkeyup="searchSubjects()" placeholder="Nhập tên môn học HOẶC Mã số sinh viên (MSSV) để tìm lịch thi...">
         <table id="subjectsTable">
             <thead>
                 <tr>
                     <th style="width: 5%">STT</th>
-                    <th style="width: 50%">Tên học phần</th>
-                    <th style="width: 30%">Thông tin</th>
+                    <th style="width: 50%">Tên Môn Học</th>
+                    <th style="width: 30%">Lịch Thi & Phòng</th>
                     <th style="width: 15%; text-align: center;">DSSV</th>
                 </tr>
             </thead>
@@ -101,9 +101,9 @@
 <script src="database.js"></script>
 
 <script>
-    let subjectsList = [];   // Danh sách các phòng thi độc nhất
-    let filteredData = [];   // Danh sách sau khi lọc tìm kiếm
-    let studentsMap = {};    // Lưu danh sách SV theo mã ca thi: { 'mã_ca': [sv1, sv2,...] }
+    let subjectsList = [];   
+    let filteredData = [];   
+    let studentsMap = {};    
     
     let currentPage = 1;
     const rowsPerPage = 20;
@@ -192,19 +192,13 @@
             filteredData = [...subjectsList];
         } else {
             filteredData = subjectsList.filter(item => {
-                // Kiểm tra xem tên môn học có khớp từ khóa không
                 const matchSubjectName = item.name.toUpperCase().includes(filter);
-                
-                // Kiểm tra xem trong phòng thi này có sinh viên nào khớp MSSV đang gõ không
                 const studentsInRoom = studentsMap[item.maCa] || [];
                 const matchStudentId = studentsInRoom.some(sv => sv.masv.toUpperCase().includes(filter));
-                
-                // Thỏa mãn 1 trong 2 điều kiện là giữ lại hàng đó
                 return matchSubjectName || matchStudentId;
             });
         }
         
-        // Đánh lại số thứ tự (STT) tạm thời dựa trên danh sách đã lọc để hiển thị bảng đẹp hơn
         filteredData = filteredData.map((item, index) => {
             return { ...item, stt: index + 1 };
         });
@@ -230,7 +224,7 @@
 
         statusArea.innerHTML = `
             <div>Phòng thi: <strong class="room-tag">${subjectInfo.phong}</strong> | Ca thi: <strong>${subjectInfo.ca} (${subjectInfo.gio})</strong> | Ngày thi: <strong>${subjectInfo.ngay}</strong></div>
-            <div>Mã ca thi: <code style="background:#f4f4f4; padding:2px 6px;">${maCaId}</code> | Tổng số sinh viên: <strong>${listSV.length}</strong></div>
+            <div>Tổng số sinh viên trong phòng: <strong>${listSV.length}</strong></div>
         `;
 
         listSV.sort((a, b) => parseInt(a.stt) - parseInt(b.stt));
